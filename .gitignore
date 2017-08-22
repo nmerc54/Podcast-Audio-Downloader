@@ -1,0 +1,5 @@
+# Exclude all HTML files
+*.html
+
+# Ignore all files in mp3 directory
+*./Audio_Files

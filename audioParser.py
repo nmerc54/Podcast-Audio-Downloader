@@ -1,6 +1,6 @@
 from sys import *
 from time import gmtime, strftime
-from urllib2 import urlopen
+import urllib2
 
 
 """ * * * * * * * * * * * * * * * * * * * * * * * * * * 
@@ -14,7 +14,8 @@ class AudioParser(object):
 		self._html_text = ""
 		self._audio_list = []
 		self._title_list = []
-
+		self._directory = "Audio_Files"
+		
 		self.set_html_text()
 
 
@@ -24,6 +25,11 @@ class AudioParser(object):
 
 	def get_html_text(self):
 		return self._html_text		
+
+
+	def getDirectory(self):
+		return self._directory
+
 
 	def setAudioList(self, audio_list):
 		self._audio_list = audio_list
@@ -48,7 +54,11 @@ class AudioParser(object):
 	def popAudioList(self):
 		return self._audio_list.pop()
 
+	
+	def popTitleList(self):
+		return self._title_list.pop()
 
+	
 	def parse_for_audio(self):
 		"""
 		Let child class handle this
@@ -56,22 +66,32 @@ class AudioParser(object):
 		pass
 
 
+	def isDownloaded(self, title):
+		"""
+		Check if the title is downloaded already
+		"""		
+		False
+
+
 	def downloadAllAudio(self):
 		"""
 		Should cycle through audio_list and download
-		each URL.
+		each URL. Return bool
 		"""
 		for url in self.getAudioList():
 			downloadAudio(url)
 
 
-	def downloadAudio(self, URL):
+	def downloadAudio(self, URL, filename):
 		"""
 		Downloads Audio at the specified URL
 		"""
-		#urlopen(url) 
-		print "I'm downloading!"	
-
+		response = urllib2.urlopen(URL)
+		data = response.read()
+		
+		with open(filename, 'w') as f:
+			f.write(data)
+			
 
 	def getAllAudio(self):
 		self.parse_for_audio()		# Gather all URLs to be downloaded
@@ -86,18 +106,20 @@ class AudioParser(object):
 		"""
 		self.parse_for_audio()	# Gather all URLs to be downloaded
 
-		print "Audio List: " + str(self.getAudioList())
-	
 		while len(self.getAudioList()) > 0:
 
 			# pop last url off of list
-			url = self.popAudioList()					
-			print "About to download: " + url
+			url = self.popAudioList()
+			title = self.popTitleList()	
 			
-			# Download the MP3 at the given URL
-			self.downloadAudio(url)						
-			print "Download Successfull! | " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) 
-
+			if not self.isDownloaded(title):				
+				print "About to download: " + title + ".mp3"
+				print "From: " + url
+			
+				# Download the MP3 at the given URL
+				self.downloadAudio(url, self.getDirectory() + "/" + title + ".mp3")
+				print "Download Successfull! | " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) 
+				print "\n" + "-"*43
 
 
 """ * * * * * * * * * * * * * * * * * * * * * * * * * * 
@@ -114,11 +136,9 @@ class PlayItParser(AudioParser):
 		"""
 		Here's where the Play.it parser should go. Sets  
 		list of all URLs of MP3 files in HTML file.
-		"""	
+		"""
 		text = self.get_html_text()
 		
-		print "Text length: " + str(len(text))
-
 		starting_key = 'div id="embed-audioplayer-'
 		title_key = 'class="title"'
 		title_end_key = '</'
@@ -129,7 +149,7 @@ class PlayItParser(AudioParser):
 		title_list = []
 		audio_list = []
 	
-		while text.find(starting_key) != -1 :
+		while (text.find(starting_key) != -1) :
 			starting_idx = text.find(starting_key) + len(starting_key)
 			text = text[starting_idx:]
 			
@@ -144,8 +164,7 @@ class PlayItParser(AudioParser):
 			url_end_idx = text.find(url_end_key)
 			
 			audio_list.append( text[1:url_end_idx] )	
-		
-
+			
 
 		self.setAudioList( audio_list )
 		self.setTitleList( title_list )
@@ -160,9 +179,10 @@ if __name__ == "__main__":
 	parser = PlayItParser(myHTML_file)
 
 	# Get Aduio Test
-	#parser.getAudio()
+	parser.getAudio()
 	
 	# Parsing Test
+	"""
 	parser.parse_for_audio()
 	print "Number of URLs: " + str(len(parser.getAudioList()))
 	print "List of URLs:"
@@ -173,7 +193,7 @@ if __name__ == "__main__":
 	print "List of Titles: "
 	for title in parser.getTitleList():
 		print title
-
+	"""
 
 
 
