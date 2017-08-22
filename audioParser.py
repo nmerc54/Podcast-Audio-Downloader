@@ -13,6 +13,7 @@ class AudioParser(object):
 		self._html_file = HTML_file
 		self._html_text = ""
 		self._audio_list = []
+		self._title_list = []
 
 		self.set_html_text()
 
@@ -35,7 +36,15 @@ class AudioParser(object):
 	def getAudioList(self):
 		return self._audio_list
 
+
+	def setTitleList(self, title_list):
+		self._title_list = title_list
 	
+	
+	def getTitleList(self):
+		return self._title_list
+
+
 	def popAudioList(self):
 		return self._audio_list.pop()
 
@@ -108,9 +117,14 @@ class PlayItParser(AudioParser):
 		"""	
 		text = self.get_html_text()
 		
+		print "Text length: " + str(len(text))
+
 		starting_key = 'div id="embed-audioplayer-'
 		title_key = 'class="title"'
 		title_end_key = '</'
+		url_key = '<source src="'
+		url_end_key = '?'
+
 
 		title_list = []
 		audio_list = []
@@ -118,16 +132,23 @@ class PlayItParser(AudioParser):
 		while text.find(starting_key) != -1 :
 			starting_idx = text.find(starting_key) + len(starting_key)
 			text = text[starting_idx:]
-			\
+			
 			title_idx = text.find(title_key) + len(title_key)
 			text = text[title_idx:]
 			title_end_idx = text.find(title_end_key)
 	
-			title_list.append( text[0:title_end_idx] )
+			title_list.append( text[1:title_end_idx] )
+
+			url_idx = text.find(url_key) + len(url_key) - 1
+			text = text[url_idx:]
+			url_end_idx = text.find(url_end_key)
+			
+			audio_list.append( text[1:url_end_idx] )	
+		
 
 
 		self.setAudioList( audio_list )
-		#self.setTitleList( title_list )
+		self.setTitleList( title_list )
 
 
 """ * * * * * * * * * * * * * * * * * * * * * * * * * * 
@@ -148,6 +169,10 @@ if __name__ == "__main__":
 	for url in parser.getAudioList():
 		print url
 
+	print "Number of Titles: " + str(len(parser.getTitleList()))
+	print "List of Titles: "
+	for title in parser.getTitleList():
+		print title
 
 
 
