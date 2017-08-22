@@ -11,20 +11,24 @@ class AudioParser(object):
 	
 	def __init__(self, HTML_file):
 		self._html_file = HTML_file
-		self._html_text = self.import_html_text()
+		self._html_text = ""
 		self._audio_list = []
 
+		self.set_html_text()
 
-	def import_html_text(self):
-		html_text = self.get_html_file().read()
-		return html_text
 
+	def set_html_text(self):
+		self._html_text = self.get_html_file().read()
+		
+
+	def get_html_text(self):
+		return self._html_text		
 
 	def setAudioList(self, audio_list):
 		self._audio_list = audio_list
 
 
-	def get_html_file():
+	def get_html_file(self):
 		return self._html_file
 
 
@@ -56,7 +60,8 @@ class AudioParser(object):
 		"""
 		Downloads Audio at the specified URL
 		"""
-		urlopen(url) 
+		#urlopen(url) 
+		print "I'm downloading!"	
 
 
 	def getAllAudio(self):
@@ -71,6 +76,8 @@ class AudioParser(object):
 		download.
 		"""
 		self.parse_for_audio()	# Gather all URLs to be downloaded
+
+		print "Audio List: " + str(self.getAudioList())
 	
 		while len(self.getAudioList()) > 0:
 
@@ -94,23 +101,54 @@ class PlayItParser(AudioParser):
 		AudioParser.__init__(self, HTML_file)
 
 		
-	def parse_for_Audio(self):
+	def parse_for_audio(self):
 		"""
-		Here's where the Play.it parser should go. Returns
-		a list of all URLs of MP3 files in HTML file.
+		Here's where the Play.it parser should go. Sets  
+		list of all URLs of MP3 files in HTML file.
 		"""	
+		text = self.get_html_text()
 		
+		starting_key = 'div id="embed-audioplayer-'
+		title_key = 'class="title"'
+		title_end_key = '</'
+
+		title_list = []
+		audio_list = []
+	
+		while text.find(starting_key) != -1 :
+			starting_idx = text.find(starting_key) + len(starting_key)
+			text = text[starting_idx:]
+			\
+			title_idx = text.find(title_key) + len(title_key)
+			text = text[title_idx:]
+			title_end_idx = text.find(title_end_key)
+	
+			title_list.append( text[0:title_end_idx] )
+
+
+		self.setAudioList( audio_list )
+		#self.setTitleList( title_list )
 
 
 """ * * * * * * * * * * * * * * * * * * * * * * * * * * 
 *                      Tests                          *
 * * * * * * * * * * * * * * * * * * * * * * * * * * """
 
-if "__name__" == __main__:
+if __name__ == "__main__":
 	myHTML_file = open("tester.html", 'r')
 	parser = PlayItParser(myHTML_file)
 
-	parser.getAudio()
+	# Get Aduio Test
+	#parser.getAudio()
 	
+	# Parsing Test
+	parser.parse_for_audio()
+	print "Number of URLs: " + str(len(parser.getAudioList()))
+	print "List of URLs:"
+	for url in parser.getAudioList():
+		print url
+
+
+
 
 
