@@ -1,6 +1,7 @@
 from sys import *
 from time import gmtime, strftime
 import urllib2
+import os
 
 
 """ * * * * * * * * * * * * * * * * * * * * * * * * * * 
@@ -15,8 +16,10 @@ class AudioParser(object):
 		self._audio_list = []
 		self._title_list = []
 		self._directory = "Audio_Files"
-		
+		self._file_listing = []		
+
 		self.set_html_text()
+		self._setFileListing()
 
 
 	def set_html_text(self):
@@ -66,11 +69,25 @@ class AudioParser(object):
 		pass
 
 
+	def _setFileListing(self):
+		files = getFileList( self.getDirectory() )		
+		newfiles = []
+		for f in files:
+			newfiles.append( f.replace('.mp3', "") )
+
+		print newfiles
+		self._file_listing = newfiles
+
+		
+	def _getFileListing(self):
+		return self._file_listing
+
+
 	def isDownloaded(self, title):
 		"""
 		Check if the title is downloaded already
 		"""		
-		False
+		return (title in self._getFileListing())
 
 
 	def downloadAllAudio(self):
@@ -130,8 +147,12 @@ class PlayItParser(AudioParser):
 	
 	def __init__(self, HTML_file):
 		AudioParser.__init__(self, HTML_file)
-
+		"""
+		NOTE: The Directory name SHOULD be here... not in the parent. 
+					Need to address.
+		"""
 		
+
 	def parse_for_audio(self):
 		"""
 		Here's where the Play.it parser should go. Sets  
@@ -144,7 +165,6 @@ class PlayItParser(AudioParser):
 		title_end_key = '</'
 		url_key = '<source src="'
 		url_end_key = '?'
-
 
 		title_list = []
 		audio_list = []
@@ -165,9 +185,22 @@ class PlayItParser(AudioParser):
 			
 			audio_list.append( text[1:url_end_idx] )	
 			
-
 		self.setAudioList( audio_list )
 		self.setTitleList( title_list )
+
+
+
+""" * * * * * * * * * * * * * * * * * * * * * * * * * * 
+*                Helper Functions                     *
+* * * * * * * * * * * * * * * * * * * * * * * * * * """
+
+def getFileList(relative_directory = ""):
+	mypath = os.getcwd() + "/" + relative_directory
+	
+	return [f for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
+
+
+
 
 
 """ * * * * * * * * * * * * * * * * * * * * * * * * * * 
@@ -179,8 +212,10 @@ if __name__ == "__main__":
 	parser = PlayItParser(myHTML_file)
 
 	# Get Aduio Test
-	parser.getAudio()
 	
+	parser.getAudio()
+		
+
 	# Parsing Test
 	"""
 	parser.parse_for_audio()
@@ -195,5 +230,14 @@ if __name__ == "__main__":
 		print title
 	"""
 
+	# Check Directory Test
+	"""
+	parser._setFileListing()
+	for f in parser._getFileListing():
+		print f
 
-
+	print "----------------------------"
+	testlist = ["something", "blah", "Tom Brady", "Patriots"]
+	for tester in testlist:
+		print tester + " in list: " + str( parser.isDownloaded(tester) )
+	"""
