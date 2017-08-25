@@ -10,12 +10,17 @@ import os
 
 class AudioParser(object):
 	
-	def __init__(self, HTML_file):
-		self._html_file = HTML_file
+	def __init__(self, podcast_url, show_name=""):
+		self._html_file = urllib2.urlopen(podcast_url)
 		self._html_text = ""
 		self._audio_list = []
 		self._title_list = []
-		self._directory = "Audio_Files"
+
+		if show_name != "":
+			self._directory = "Audio_Files/" + show_name
+		else: 
+			self._directory = "Audio_Files"
+		
 		self._file_listing = []		
 
 		self.set_html_text()
@@ -145,8 +150,8 @@ class AudioParser(object):
 
 class PlayItParser(AudioParser):
 	
-	def __init__(self, HTML_file):
-		AudioParser.__init__(self, HTML_file)
+	def __init__(self, podcast_url, show_name):
+		AudioParser.__init__(self, podcast_url, show_name)
 		"""
 		NOTE: The Directory name SHOULD be here... not in the parent. 
 					Need to address.
@@ -185,8 +190,12 @@ class PlayItParser(AudioParser):
 			
 			audio_list.append( text[1:url_end_idx] )	
 			
-		self.setAudioList( audio_list )
-		self.setTitleList( title_list )
+		# Reverse the list - need in chronological order
+		audio_list.reverse()
+		title_list.reverse()
+		
+		self.setAudioList( audio_list)
+		self.setTitleList( title_list)
 
 
 
@@ -208,11 +217,17 @@ def getFileList(relative_directory = ""):
 * * * * * * * * * * * * * * * * * * * * * * * * * * """
 
 if __name__ == "__main__":
-	myHTML_file = open("tester.html", 'r')
-	parser = PlayItParser(myHTML_file)
+	
+	#felger_and_mazz_url = 'http://www1.play.it/audio/felger-massarotti/'
+	#parser = PlayItParser(felger_and_mazz_url, "Felger_and_Mazz")
+
+	#zolak_and_bertrand_url = 'http://www1.play.it/audio/zolak-bertrand/'
+	#parser = PlayItParser(zolak_and_bertrand_url, "Zolak_and_Bertrand")
+
+	toucher_and_rich_url = 'http://www1.play.it/audio/toucher-rich/'
+	parser = PlayItParser(toucher_and_rich_url, "Toucher_and_Rich")	
 
 	# Get Aduio Test
-	
 	parser.getAudio()
 		
 

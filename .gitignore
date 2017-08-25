@@ -2,4 +2,5 @@
 *.html
 
 # Ignore all files in mp3 directory
-*./Audio_Files
+Audio_Files/*
+*.mp3
